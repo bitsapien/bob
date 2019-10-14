@@ -1,0 +1,55 @@
+---
+
+#   This file is part of Bob.
+#
+#   Bob is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Bob is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Bob. If not, see <http://www.gnu.org/licenses/>.
+
+version: "2"
+
+services:
+  db:
+    image: "postgres:alpine"
+    container_name: "db"
+    environment:
+      - POSTGRES_USER=bob
+      - POSTGRES_DB=bob
+    ports:
+      - 5432:5432
+
+  resource-git:
+    image: "bobcd/resource-git"
+    container_name: "resource-git"
+    ports:
+      - "8000:8000"
+
+  artifact-local:
+    image: "bobcd/artifact-local"
+    container_name: "artifact-local"
+    ports:
+      - "8001:8001"
+  
+  bob:
+    build: .
+    image: "bobcd/bob:openjdk-12-alpine"
+    privileged: false
+    container_name: "bob"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - BOB_DB_HOST=db
+      - BOB_DB_PORT=5432
+      - BOB_DB_USER=bob
+      - BOB_DB_NAME=bob
+    ports:
+      - "7777:7777"
